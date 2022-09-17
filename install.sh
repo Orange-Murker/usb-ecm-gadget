@@ -83,7 +83,6 @@ echo "Set up a DHCP server using dnsmasq 192.168.53.1-192.168.53.6"
 # DNS will not work on the host if this is not set because the dnsmasq DNS service
 # was turned off in the config above and dnsmasq overrides /etc/resolv.conf
 sed -i 's/#DNSMASQ_EXCEPT="lo"/DNSMASQ_EXCEPT="lo"/' /etc/default/dnsmasq
-systemctl restart dnsmasq
 
 # Create the script that will enable the gadget on every boot
 script='#!/bin/bash
