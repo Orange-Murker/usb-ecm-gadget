@@ -33,6 +33,9 @@ if [ "$1" == "-r" ]; then
   # Remove interface
   rm -f /etc/network/interfaces.d/usb0
 
+  # Remove usb0 from the DHCP client denylist
+  sed -i '${/denyinterfaces usb0/d}' /etc/dhcpcd.conf
+
   # Remove kernel modules
   sed -i '${/libcomposite/d}' /etc/modules
   sed -i '${s/ modules-load=dwc2//}' /boot/cmdline.txt 
@@ -48,6 +51,9 @@ append_if_does_not_exist "dtoverlay=dwc2" "/boot/config.txt"
 printf "%s" "$(< /boot/cmdline.txt)" > /boot/cmdline.txt
 append_if_does_not_exist " modules-load=dwc2" "/boot/cmdline.txt"
 append_if_does_not_exist "libcomposite" "/etc/modules"
+
+# Do not run the DHCP client on our USB interface
+append_if_does_not_exist "denyinterfaces usb0" "/etc/dhcpcd.conf"
 
 # Give the device a static IP
 interface='auto usb0
@@ -72,6 +78,12 @@ dhcp-range=192.168.53.1,192.168.53.6,255.255.255.248,24h
 leasefile-ro'
 echo "$config" > /etc/dnsmasq.d/usb
 echo "Set up a DHCP server using dnsmasq 192.168.53.1-192.168.53.6"
+
+# Prevent dnsmasq from fiddling with our DNS servers.
+# DNS will not work on the host if this is not set because the dnsmasq DNS service
+# was turned off in the config above and dnsmasq overrides /etc/resolv.conf
+sed -i 's/#DNSMASQ_EXCEPT="lo"/DNSMASQ_EXCEPT="lo"/' /etc/default/dnsmasq
+systemctl restart dnsmasq
 
 # Create the script that will enable the gadget on every boot
 script='#!/bin/bash
