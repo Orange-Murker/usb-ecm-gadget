@@ -68,16 +68,18 @@ echo "Set up a static IP: 192.168.53.1"
 echo ""
 apt install dnsmasq -y
 echo ""
+# Deliberately set the router address to be empty so that the device that the connected
+# device does not route its traffic through us.
 config='dhcp-authoritative
 dhcp-rapid-commit
 interface=usb0
 bind-interfaces
 port=0
-dhcp-option=3,192.168.53.1
-dhcp-range=192.168.53.1,192.168.53.6,255.255.255.248,24h
+dhcp-option=option:router
+dhcp-range=192.168.53.2,192.168.53.6,255.255.255.248,1d
 leasefile-ro'
 echo "$config" > /etc/dnsmasq.d/usb
-echo "Set up a DHCP server using dnsmasq 192.168.53.1-192.168.53.6"
+echo "Set up a DHCP server using dnsmasq 192.168.53.2-192.168.53.6"
 
 # Prevent dnsmasq from fiddling with our DNS servers.
 # DNS will not work on the host if this is not set because the dnsmasq DNS service
@@ -116,9 +118,9 @@ echo 250 > configs/c.1/MaxPower
 mkdir -p functions/ecm.usb0
 
 # I just generated some random LAA MAC addresses. Not that it matters too much.
-# The MAC address of the Pi
-echo "4A:4F:10:4B:5E:0A" > functions/ecm.usb0/host_addr
 # The MAC address that the device connected over USB gets
+echo "4A:4F:10:4B:5E:0A" > functions/ecm.usb0/host_addr
+# The MAC address of the device
 echo "52:4E:0A:6B:B6:D9" > functions/ecm.usb0/dev_addr
 
 # Link the functions to the config
